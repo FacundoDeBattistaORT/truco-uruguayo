@@ -95,8 +95,14 @@ h1.brand span { color: var(--text); font-size: 0.72em; }
 
 /* ---------- Mesa ---------- */
 .layout { display: grid; grid-template-columns: 1fr; gap: 10px; min-height: 0; }
-@media (min-width: 1000px) {
-  .layout { grid-template-columns: 1fr 280px; }
+.table-area { order: 1; }
+.refpanel { order: 2; }
+.sidelog { order: 3; }
+@media (min-width: 1140px) {
+  .layout { grid-template-columns: 250px minmax(0, 1fr) 270px; align-items: start; }
+  .refpanel { order: 1; }
+  .table-area { order: 2; }
+  .sidelog { order: 3; }
 }
 
 .table-area {
@@ -352,6 +358,61 @@ button.act:disabled { opacity: .45; cursor: default; filter: none; }
   .sidelog { max-height: 180px; }
   .loglist { max-height: 120px; }
 }
+
+/* ---------- Guía de cartas y puntos ---------- */
+.refpanel {
+  background: var(--panel);
+  border: 1px solid var(--felt-line);
+  border-radius: 12px;
+  padding: 4px 14px;
+  font-size: 0.8rem;
+  min-width: 0;
+}
+.refpanel summary {
+  cursor: pointer;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-dim);
+  font-weight: 700;
+  padding: 8px 0;
+}
+.refpanel .refcontent { padding-bottom: 12px; }
+.refpanel h3 {
+  margin: 12px 0 5px;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gold-soft);
+  font-weight: 700;
+}
+.refrow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+  color: var(--text-dim);
+}
+.refrow .val { font-variant-numeric: tabular-nums; font-size: 0.72rem; }
+.mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--cream);
+  border-radius: 5px;
+  padding: 1px 6px;
+  font-weight: 800;
+  font-size: 0.75rem;
+}
+.mini svg { width: 11px; height: 11px; flex: none; }
+.mini.plain { color: var(--ink); }
+.mini.s-espada { color: var(--espada); }
+.mini.s-basto { color: var(--basto); }
+.mini.s-oro { color: var(--oro); }
+.mini.s-copa { color: var(--copa); }
+.reforder { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; color: var(--text-dim); }
+.reftext { color: var(--text-dim); margin: 4px 0; line-height: 1.5; }
 
 /* ---------- Toast y overlays ---------- */
 .toast {

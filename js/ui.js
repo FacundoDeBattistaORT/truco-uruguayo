@@ -71,6 +71,45 @@ function renderPlayerHand(clickable) {
   });
 }
 
+// ---------- Guía (se rearma con la muestra de cada mano) ----------
+const SUIT_PLURAL = { espada: 'espadas', basto: 'bastos', oro: 'oros', copa: 'copas' };
+
+function miniCard(rank, suit) {
+  return `<span class="mini s-${suit}"><svg aria-hidden="true"><use href="#suit-${suit}"></use></svg>${rank}</span>`;
+}
+
+function renderReference() {
+  const el = $('#refcontent');
+  if (!el) return;
+  const m = game.muestra;
+  const s = m.suit;
+  const piezas = [[2, 30], [4, 29], [5, 28], [11, 27], [10, 27]];
+  const piezaRows = piezas.map(([r, v], i) => {
+    const chip = r === m.rank
+      ? `${miniCard(12, s)} <small>(alcahuete: juega por la muestra)</small>`
+      : miniCard(r, s);
+    return `<div class="refrow"><span>${i + 1}º ${chip}</span><span class="val">envido ${v}</span></div>`;
+  }).join('');
+  const matas = [[1, 'espada'], [1, 'basto'], [7, 'espada'], [7, 'oro']];
+  const mataRows = matas.map(([r, su], i) =>
+    `<div class="refrow"><span>${i + 6}º ${miniCard(r, su)}</span></div>`
+  ).join('');
+  const rest = ['3', '2', '1 oro/copa', '12', '11', '10', '7 copa/basto', '6', '5', '4'];
+  const order = rest.map((t) => `<span class="mini plain">${t}</span>`).join('<span>›</span>');
+  el.innerHTML = `
+    <h3>Piezas — muestra: ${SUIT_PLURAL[s]}</h3>
+    ${piezaRows}
+    <p class="reftext">Las piezas son el 2, 4, 5, 11 y 10 del palo de la muestra: le ganan a todas las demás cartas.</p>
+    <h3>Matas (después de las piezas)</h3>
+    ${mataRows}
+    <h3>Las demás, de mayor a menor</h3>
+    <div class="reforder">${order}</div>
+    <h3>Envido</h3>
+    <p class="reftext">Dos cartas del mismo palo: se suman + 20 (las figuras valen 0; máximo 33). Con pieza: el valor de la tabla de arriba + tu mejor otra carta.</p>
+    <h3>Flor (vale 3)</h3>
+    <p class="reftext">Hay flor con tres del mismo palo, una pieza + dos del mismo palo, o dos piezas. Flor contra flor: gana la más alta y vale 6. Su valor: 20 + la suma de las tres cartas (las piezas aportan 10 / 9 / 8 / 7).</p>`;
+}
+
 function renderMuestra() {
   const zone = $('#muestra-slot');
   zone.replaceChildren();
@@ -184,6 +223,7 @@ async function show(e) {
     case 'hand-start': {
       clearSlots();
       renderMuestra();
+      renderReference();
       renderAIHand();
       renderPlayerHand(false);
       renderTricks();
@@ -292,4 +332,9 @@ function newGame() {
 }
 
 $('#btn-rematch').addEventListener('click', newGame);
+// En pantallas anchas la guía arranca desplegada.
+if (window.matchMedia('(min-width: 1140px)').matches) {
+  const d = $('#refdetails');
+  if (d) d.open = true;
+}
 newGame();
