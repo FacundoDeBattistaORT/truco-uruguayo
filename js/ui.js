@@ -71,6 +71,7 @@ function cardEl(card, { back = false } = {}) {
 
 // ---------- Render ----------
 function stageLabel(n) {
+  if (game && game.target !== 30) return `${n} punto${n === 1 ? '' : 's'}`;
   return n <= 15 ? `${n} malas` : `${n - 15} buenas`;
 }
 
@@ -391,19 +392,31 @@ function afterIdle() {
 }
 
 // ---------- Inicio ----------
-function newGame() {
+let lastTarget = 30;
+
+function newGame(target = lastTarget) {
+  lastTarget = target;
   $('#overlay').hidden = true;
+  $('#menu').hidden = true;
+  $('#brand-sub').textContent = `a ${target} puntos · con muestra y flor`;
   $('#loglist').replaceChildren();
   queue.length = 0;
-  game = new TrucoGame({ target: 30, onEvent });
+  game = new TrucoGame({ target, onEvent });
   game.newHand();
   pump();
 }
 
-$('#btn-rematch').addEventListener('click', newGame);
+function showMenu() {
+  $('#overlay').hidden = true;
+  $('#menu').hidden = false;
+}
+
+$('#btn-p30').addEventListener('click', () => newGame(30));
+$('#btn-p15').addEventListener('click', () => newGame(15));
+$('#btn-rematch').addEventListener('click', () => newGame());
+$('#btn-menu').addEventListener('click', showMenu);
 // En pantallas anchas la guía arranca desplegada.
 if (window.matchMedia('(min-width: 1140px)').matches) {
   const d = $('#refdetails');
   if (d) d.open = true;
 }
-newGame();

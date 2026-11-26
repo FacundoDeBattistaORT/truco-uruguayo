@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Truco Uruguayo</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Caveat:wght@700&family=Inter:wght@400;700;800&display=swap">
-  <link rel="stylesheet" href="css/styles.css?v=4">
+  <link rel="stylesheet" href="css/styles.css?v=5">
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -60,7 +60,7 @@
 
   <div class="app">
     <header class="topbar">
-      <h1 class="brand">Truco Uruguayo <span>a 30 puntos · con muestra y flor</span></h1>
+      <h1 class="brand">Truco Uruguayo <span id="brand-sub">con muestra y flor</span></h1>
       <div class="notepad" aria-label="Tanteador">
         <div class="cols">
           <div class="ncol" id="ncol-p">
@@ -143,10 +143,27 @@
     <div class="panel">
       <h2></h2>
       <p></p>
-      <button class="act" id="btn-rematch">Revancha</button>
+      <div class="btnrow">
+        <button class="act" id="btn-rematch">Revancha</button>
+        <button class="act secondary" id="btn-menu">Menú</button>
+      </div>
     </div>
   </div>
 
-  <script type="module" src="js/ui.js?v=3"></script>
+  <div class="overlay menu" id="menu">
+    <div class="menu-inner">
+      <h2 class="menu-title">Truco<br>Uruguayo</h2>
+      <div class="panel">
+        <p>Mano a mano contra la IA: con muestra, piezas, envido, flor y truco.</p>
+        <div class="menu-btns">
+          <button class="act" id="btn-p30">Partida a 30</button>
+          <button class="act secondary" id="btn-p15">Partida corta a 15</button>
+        </div>
+        <p class="menu-hint">Durante la partida tenés a la izquierda la guía con el orden de las cartas y los puntos.</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/ui.js?v=4"></script>
 </body>
 </html>

@@ -532,6 +532,37 @@ button.act:disabled { opacity: .45; cursor: default; filter: none; }
   font-size: 1.4rem;
 }
 .overlay p { color: var(--ink-soft); margin: 0 0 18px; }
+.overlay .btnrow { justify-content: center; }
+
+/* ---------- Menú inicial ---------- */
+.overlay.menu { background: rgba(35, 16, 2, 0.55); }
+.menu-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  max-width: 400px;
+}
+.menu-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.4rem, 9vw, 4rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+  text-align: center;
+  color: #fff;
+  margin: 0;
+  text-shadow:
+    3px 3px 0 rgba(25, 10, 0, 0.85),
+    -2px 2px 0 rgba(25, 10, 0, 0.85),
+    2px -2px 0 rgba(25, 10, 0, 0.85),
+    -2px -2px 0 rgba(25, 10, 0, 0.85),
+    6px 7px 10px rgba(25, 10, 0, 0.6);
+}
+.menu .panel { transform: rotate(-0.8deg); }
+.menu-btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.menu-btns .act { font-size: 1rem; padding: 12px 18px; }
+.menu-hint { font-size: 0.78rem; margin: 0; }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
