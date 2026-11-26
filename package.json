@@ -1,0 +1,9 @@
+{
+  "name": "truco-uruguayo",
+  "version": "1.0.0",
+  "description": "Truco uruguayo single player contra una IA",
+  "type": "module",
+  "scripts": {
+    "start": "npx -y serve ."
+  }
+}
