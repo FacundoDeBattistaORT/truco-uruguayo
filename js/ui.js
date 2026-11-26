@@ -3,7 +3,7 @@
 
 import { TrucoGame } from './game.js';
 import { aiDecide } from './ai.js';
-import { isPieza, cardName } from './cards.js';
+import { isPieza, cardName, power, envidoUnits, envidoPoints, hasFlor, florPoints } from './cards.js';
 
 const $ = (sel) => document.querySelector(sel);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -254,9 +254,92 @@ const ACTION_STYLE = {
   noquiero: 'secondary', 'flor-achico': 'secondary', mazo: 'danger',
 };
 
+// ---------- Guía para principiantes (nivel fácil) ----------
+function envidoBreakdown(hand, m) {
+  const piezas = hand.filter((c) => isPieza(c, m)).sort((a, b) => envidoUnits(b, m) - envidoUnits(a, m));
+  if (piezas.length) {
+    const best = piezas[0];
+    const rest = hand.filter((c) => c !== best);
+    const other = Math.max(...rest.map((c) => envidoUnits(c, m)));
+    return `la pieza ${cardName(best)} vale ${20 + envidoUnits(best, m)} y se le suma tu mejor otra carta (+${other})`;
+  }
+  let pair = null;
+  for (let i = 0; i < hand.length; i++) {
+    for (let j = i + 1; j < hand.length; j++) {
+      if (hand[i].suit === hand[j].suit) pair = [hand[i], hand[j]];
+    }
+  }
+  if (pair) {
+    return `${cardName(pair[0])} y ${cardName(pair[1])} son del mismo palo: 20 + ${envidoUnits(pair[0], m)} + ${envidoUnits(pair[1], m)}`;
+  }
+  return 'sin dos cartas del mismo palo, vale solo tu carta más alta';
+}
+
+function coachHandInfo() {
+  const hand = game.original.p;
+  const m = game.muestra;
+  const lines = [];
+  const piezas = hand.filter((c) => isPieza(c, m));
+  if (piezas.length) {
+    lines.push(`Tenés <strong>pieza</strong>: ${piezas.map(cardName).join(' y ')} (marcada en dorado). Las piezas son el 2, 4, 5, 11 y 10 del palo de la muestra (${SUIT_PLURAL[m.suit]}) y le ganan a todas las demás cartas.`);
+  }
+  const best = [...hand].sort((a, b) => power(b, m) - power(a, m))[0];
+  lines.push(`Tu carta más fuerte es el <strong>${cardName(best)}</strong>. Se juegan 3 bazas: gana la carta más alta (el orden está en la guía de la izquierda) y la mano se la lleva quien gana 2 bazas.`);
+  if (hasFlor(hand, m)) {
+    lines.push(`¡Tenés <strong>flor</strong> (${florPoints(hand, m)} puntos de flor)! Se canta sola al empezar y vale 3 puntos. Con flor no se juega el envido.`);
+  } else {
+    lines.push(`Tu <strong>envido</strong> vale ${envidoPoints(hand, m)}: ${envidoBreakdown(hand, m)}.`);
+  }
+  return lines;
+}
+
+function coachPending() {
+  const k = game.pending.kind;
+  const my = envidoPoints(game.original.p, game.muestra);
+  if (k === 'envido') {
+    return `La IA cantó al envido: se juegan <strong>${game.envidoStakeAccepted()} puntos</strong>. Vos tenés <strong>${my}</strong>. Con "Quiero" gana el que tenga más (si empatan, gana el mano); con "No quiero" la IA se lleva ${game.envidoStakeRejected()}.`;
+  }
+  if (k === 'truco') {
+    const lvl = game.truco.pendingLevel;
+    return `La IA subió la apuesta: si aceptás, la mano pasa a valer <strong>${lvl} puntos</strong>. Con "No quiero" la IA se lleva ${lvl - 1}. Si tus cartas son flojas, a veces conviene no querer.`;
+  }
+  if (k === 'flor') {
+    return `Las dos manos tienen flor. "Con flor quiero": se comparan y el ganador se lleva 6. "Me achico": la IA se lleva 4. "Contraflor al resto": se juega lo que falta para ganar la partida. Tu flor vale ${florPoints(game.original.p, game.muestra)}.`;
+  }
+  if (k === 'florResto') {
+    return `La IA cantó contraflor al resto: si querés, se comparan las flores y el ganador se lleva lo que le falta al que va ganando. Tu flor vale ${florPoints(game.original.p, game.muestra)}.`;
+  }
+  return '';
+}
+
+function coachTurnLine(acts) {
+  const ids = new Set(acts.map((a) => a.id));
+  const bits = [];
+  if (ids.has('envido')) bits.push(`<strong>Envido</strong> (apostás 2 puntos al envido)`);
+  if (ids.has('real')) bits.push(`<strong>Real envido</strong> (3 puntos)`);
+  if (ids.has('falta')) bits.push(`<strong>Falta envido</strong> (lo que le falta al que va ganando)`);
+  if (ids.has('truco')) bits.push(`<strong>Truco</strong> (la mano pasa a valer 2)`);
+  if (ids.has('retruco')) bits.push(`<strong>Retruco</strong> (pasa a valer 3)`);
+  if (ids.has('vale4')) bits.push(`<strong>Vale cuatro</strong> (pasa a valer 4)`);
+  if (!bits.length) return 'Tocá una carta para jugarla.';
+  return `Podés tocar una carta para jugarla, o cantar: ${bits.join(' · ')}.`;
+}
+
+function renderCoach() {
+  const el = $('#coach');
+  if (aiLevel !== 'facil' || !game || game.gameOver) { el.hidden = true; return; }
+  const parts = coachHandInfo();
+  if (game.toAct === 'p' && game.phase === 'respond') parts.push(coachPending());
+  else if (game.toAct === 'p') parts.push(coachTurnLine(game.actions('p')));
+  el.innerHTML = `<div class="coach-title">Guía para principiantes</div>` +
+    parts.map((t) => `<div class="coach-line">${t}</div>`).join('');
+  el.hidden = false;
+}
+
 function renderActions() {
   const row = $('#btnrow');
   const prompt = $('#prompt');
+  renderCoach();
   row.replaceChildren();
   if (game.gameOver) { prompt.textContent = ''; return; }
   const acts = game.actions('p');
@@ -294,6 +377,7 @@ async function show(e) {
       clearSlots();
       renderMuestra();
       renderReference();
+      renderCoach();
       renderAIHand();
       renderPlayerHand(false);
       renderTricks();
@@ -383,7 +467,7 @@ function afterIdle() {
   if (game.toAct === 'a') {
     lockActions();
     setTimeout(() => {
-      const a = aiDecide(game);
+      const a = aiDecide(game, aiLevel);
       if (a && game.act('a', a)) pump();
     }, 700 + Math.random() * 600);
   } else {
@@ -392,13 +476,19 @@ function afterIdle() {
 }
 
 // ---------- Inicio ----------
+const LEVEL_NAMES = { facil: 'fácil', media: 'dificultad media', dificil: 'difícil' };
+let selTarget = 30;
+let selLevel = 'media';
 let lastTarget = 30;
+let aiLevel = 'media';
 
-function newGame(target = lastTarget) {
+function newGame(target = lastTarget, level = aiLevel) {
   lastTarget = target;
+  aiLevel = level;
   $('#overlay').hidden = true;
   $('#menu').hidden = true;
-  $('#brand-sub').textContent = `a ${target} puntos · con muestra y flor`;
+  $('#coach').hidden = true;
+  $('#brand-sub').textContent = `a ${target} puntos · ${LEVEL_NAMES[level]}`;
   $('#loglist').replaceChildren();
   queue.length = 0;
   game = new TrucoGame({ target, onEvent });
@@ -411,10 +501,19 @@ function showMenu() {
   $('#menu').hidden = false;
 }
 
-$('#btn-p30').addEventListener('click', () => newGame(30));
-$('#btn-p15').addEventListener('click', () => newGame(15));
+function updateMenuSel() {
+  document.querySelectorAll('.opt[data-target]').forEach((b) => b.classList.toggle('sel', +b.dataset.target === selTarget));
+  document.querySelectorAll('.opt[data-level]').forEach((b) => b.classList.toggle('sel', b.dataset.level === selLevel));
+}
+
+document.querySelectorAll('.opt[data-target]').forEach((b) =>
+  b.addEventListener('click', () => { selTarget = +b.dataset.target; updateMenuSel(); }));
+document.querySelectorAll('.opt[data-level]').forEach((b) =>
+  b.addEventListener('click', () => { selLevel = b.dataset.level; updateMenuSel(); }));
+$('#btn-play').addEventListener('click', () => newGame(selTarget, selLevel));
 $('#btn-rematch').addEventListener('click', () => newGame());
 $('#btn-menu').addEventListener('click', showMenu);
+updateMenuSel();
 // En pantallas anchas la guía arranca desplegada.
 if (window.matchMedia('(min-width: 1140px)').matches) {
   const d = $('#refdetails');

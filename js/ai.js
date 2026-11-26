@@ -109,49 +109,74 @@ function winProb(game, forcedCard, n) {
   return wins / n;
 }
 
-export function aiDecide(game) {
+// Perfiles de dificultad: la fácil simula poco, juega cartas al azar a veces,
+// acepta envidos malos y casi no canta; la difícil simula más, ajusta umbrales
+// y miente más seguido.
+const PROFILES = {
+  facil: {
+    sims: 40, cardNoise: 0.35, randomFold: 0.15, bluff: 0,
+    envAccept: 20.5, envAcceptStake: 0, envCall: 29, envCallP: 0.4, realCall: 99, faltaCall: 99,
+    trucoCall: [0.85, 0.9, 0.96], trucoAccept: 0.52, trucoRaise: 0.95,
+    florQuiero: 34, florResto: 99,
+  },
+  media: {
+    sims: 160, cardNoise: 0, randomFold: 0, bluff: 0.05,
+    envAccept: 23.5, envAcceptStake: 0.7, envCall: 27, envCallP: 0.75, realCall: 31, faltaCall: 32.5,
+    trucoCall: [0.68, 0.76, 0.84], trucoAccept: 0.36, trucoRaise: 0.78,
+    florQuiero: 31, florResto: 38,
+  },
+  dificil: {
+    sims: 320, cardNoise: 0, randomFold: 0, bluff: 0.09,
+    envAccept: 24.3, envAcceptStake: 0.9, envCall: 26, envCallP: 0.85, realCall: 29.5, faltaCall: 31.5,
+    trucoCall: [0.62, 0.72, 0.8], trucoAccept: 0.33, trucoRaise: 0.74,
+    florQuiero: 30, florResto: 37,
+  },
+};
+
+export function aiDecide(game, level = 'media') {
+  const P = PROFILES[level] || PROFILES.media;
   const acts = game.actions('a');
   if (!acts.length) return null;
   const ids = new Set(acts.map((x) => x.id));
   const myEnv = envidoPoints(game.original.a, game.muestra);
-  const manoBonus = game.mano === 'a' ? 0.7 : 0;
-  const e = myEnv + manoBonus;
+  const e = myEnv + (game.mano === 'a' ? 0.7 : 0);
   const rnd = Math.random();
 
   if (game.phase === 'respond') {
     const kind = game.pending.kind;
     if (kind === 'flor') {
       const f = florPoints(game.original.a, game.muestra);
-      if (f >= 38 && ids.has('contraflor-resto') && rnd < 0.8) return { id: 'contraflor-resto' };
-      if (f >= 31) return { id: 'flor-quiero' };
+      if (f >= P.florResto && ids.has('contraflor-resto') && rnd < 0.8) return { id: 'contraflor-resto' };
+      if (f >= P.florQuiero) return { id: 'flor-quiero' };
       return rnd < 0.3 ? { id: 'flor-quiero' } : { id: 'flor-achico' };
     }
     if (kind === 'florResto') {
       const f = florPoints(game.original.a, game.muestra);
-      return f >= 35 ? { id: 'flor-quiero' } : { id: 'flor-achico' };
+      return f >= P.florResto - 3 ? { id: 'flor-quiero' } : { id: 'flor-achico' };
     }
     if (kind === 'envido') {
       const stake = game.envidoStakeAccepted();
-      if (ids.has('falta') && e >= 32.5 && rnd < 0.7) return { id: 'falta' };
-      if (ids.has('real') && e >= 30.5 && rnd < 0.6) return { id: 'real' };
+      if (ids.has('falta') && e >= P.faltaCall + 1 && rnd < 0.6) return { id: 'falta' };
+      if (ids.has('real') && e >= P.realCall + 1 && rnd < 0.55) return { id: 'real' };
       if (ids.has('envido') && e >= 29 && rnd < 0.5) return { id: 'envido' };
-      const threshold = 23.5 + Math.min(6, Math.max(0, stake - 2)) * 0.7;
-      if (e >= threshold || rnd < 0.07) return { id: 'quiero' };
+      const threshold = P.envAccept + Math.min(6, Math.max(0, stake - 2)) * P.envAcceptStake;
+      if (e >= threshold || rnd < P.bluff + 0.03) return { id: 'quiero' };
       return { id: 'noquiero' };
     }
     if (kind === 'truco') {
       // "El envido está primero"
       if (ids.has('envido')) {
-        if (ids.has('falta') && e >= 32.5 && rnd < 0.5) return { id: 'falta' };
-        if (ids.has('real') && e >= 30 && rnd < 0.5) return { id: 'real' };
-        if (e >= 26.5 && rnd < 0.8) return { id: 'envido' };
+        if (ids.has('falta') && e >= P.faltaCall && rnd < 0.5) return { id: 'falta' };
+        if (ids.has('real') && e >= P.realCall && rnd < 0.5) return { id: 'real' };
+        if (e >= P.envCall - 0.5 && rnd < P.envCallP) return { id: 'envido' };
       }
-      const wp = winProb(game, null, 160);
+      if (P.randomFold && rnd < P.randomFold) return { id: 'noquiero' };
+      const wp = winProb(game, null, P.sims);
       const lvl = game.truco.pendingLevel;
       const raiseId = lvl === 2 ? 'retruco' : lvl === 3 ? 'vale4' : null;
-      if (raiseId && ids.has(raiseId) && wp > 0.78 && rnd < 0.8) return { id: raiseId };
-      const acceptThr = 0.36 + (lvl - 2) * 0.06;
-      if (wp >= acceptThr || rnd < 0.08) return { id: 'quiero' };
+      if (raiseId && ids.has(raiseId) && wp > P.trucoRaise && rnd < 0.8) return { id: raiseId };
+      const acceptThr = P.trucoAccept + (lvl - 2) * 0.06;
+      if (wp >= acceptThr || Math.random() < P.bluff) return { id: 'quiero' };
       return { id: 'noquiero' };
     }
   }
@@ -159,30 +184,30 @@ export function aiDecide(game) {
   // Fase de juego: ¿cantar envido?
   if (ids.has('envido')) {
     const oppNear = game.scores.p >= game.target - 6;
-    if (ids.has('falta') && (e >= 33 || (oppNear && e >= 28)) && rnd < 0.7) return { id: 'falta' };
-    if (ids.has('real') && e >= 31 && rnd < 0.45) return { id: 'real' };
-    if (e >= 27 && rnd < 0.75) return { id: 'envido' };
-    if (e >= 24 && rnd < 0.3) return { id: 'envido' };
-    if (rnd < 0.05) return { id: 'envido' }; // mentir un poco
+    if (ids.has('falta') && (e >= P.faltaCall + 1.5 || (oppNear && e >= 28)) && rnd < 0.7) return { id: 'falta' };
+    if (ids.has('real') && e >= P.realCall + 1.5 && rnd < 0.45) return { id: 'real' };
+    if (e >= P.envCall && rnd < P.envCallP) return { id: 'envido' };
+    if (e >= P.envCall - 3 && rnd < P.envCallP * 0.4) return { id: 'envido' };
+    if (rnd < P.bluff) return { id: 'envido' }; // mentir un poco
   }
 
   // ¿Cantar truco / retruco / vale cuatro?
   const trucoAct = acts.find((x) => ['truco', 'retruco', 'vale4'].includes(x.id));
   if (trucoAct) {
-    const wp = winProb(game, null, 160);
-    const lvl = game.truco.level;
-    const thr = lvl === 1 ? 0.68 : lvl === 2 ? 0.76 : 0.84;
+    const wp = winProb(game, null, P.sims);
+    const thr = P.trucoCall[game.truco.level - 1] ?? 0.9;
     if (wp > thr && rnd < 0.85) return { id: trucoAct.id };
-    if (rnd < 0.05 && game.trickResults.length > 0 && lvl === 1) return { id: trucoAct.id }; // bluff
+    if (rnd < P.bluff && game.trickResults.length > 0 && game.truco.level === 1) return { id: trucoAct.id };
   }
 
-  // Elegir carta por Monte Carlo.
+  // Elegir carta por Monte Carlo (la fácil a veces tira cualquiera).
   const plays = acts.filter((x) => x.id === 'play');
   if (plays.length === 1) return plays[0];
+  if (P.cardNoise && Math.random() < P.cardNoise) return plays[Math.floor(Math.random() * plays.length)];
   let best = null;
   let bestScore = -Infinity;
   for (const pl of plays) {
-    const wp = winProb(game, pl.card, 90);
+    const wp = winProb(game, pl.card, Math.max(60, Math.round(P.sims * 0.6)));
     const score = wp - power(pl.card, game.muestra) * 0.004; // a igual chance, guardar la brava
     if (score > bestScore) { bestScore = score; best = pl; }
   }

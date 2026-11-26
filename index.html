@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Truco Uruguayo</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Caveat:wght@700&family=Inter:wght@400;700;800&display=swap">
-  <link rel="stylesheet" href="css/styles.css?v=5">
+  <link rel="stylesheet" href="css/styles.css?v=6">
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -122,6 +122,7 @@
         </section>
 
         <section class="actions" aria-label="Acciones">
+          <div class="coach" id="coach" hidden></div>
           <div class="prompt" id="prompt"></div>
           <div class="btnrow" id="btnrow"></div>
         </section>
@@ -155,15 +156,29 @@
       <h2 class="menu-title">Truco<br>Uruguayo</h2>
       <div class="panel">
         <p>Mano a mano contra la IA: con muestra, piezas, envido, flor y truco.</p>
-        <div class="menu-btns">
-          <button class="act" id="btn-p30">Partida a 30</button>
-          <button class="act secondary" id="btn-p15">Partida corta a 15</button>
+        <div class="opt-group">
+          <div class="opt-label">Partida</div>
+          <div class="opt-row">
+            <button class="opt" data-target="15">Corta · 15</button>
+            <button class="opt" data-target="30">Larga · 30</button>
+          </div>
         </div>
-        <p class="menu-hint">Durante la partida tenés a la izquierda la guía con el orden de las cartas y los puntos.</p>
+        <div class="opt-group">
+          <div class="opt-label">Dificultad</div>
+          <div class="opt-row">
+            <button class="opt" data-level="facil">Fácil · tutorial</button>
+            <button class="opt" data-level="media">Media</button>
+            <button class="opt" data-level="dificil">Difícil</button>
+          </div>
+        </div>
+        <div class="menu-btns">
+          <button class="act" id="btn-play">Jugar</button>
+        </div>
+        <p class="menu-hint">En Fácil, un guía te explica tu mano y cada canto, ideal si nunca jugaste. La guía con el orden de las cartas queda siempre a la izquierda.</p>
       </div>
     </div>
   </div>
 
-  <script type="module" src="js/ui.js?v=4"></script>
+  <script type="module" src="js/ui.js?v=5"></script>
 </body>
 </html>

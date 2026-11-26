@@ -564,6 +564,59 @@ button.act:disabled { opacity: .45; cursor: default; filter: none; }
 .menu-btns .act { font-size: 1rem; padding: 12px 18px; }
 .menu-hint { font-size: 0.78rem; margin: 0; }
 
+.opt-group { margin-bottom: 12px; text-align: left; }
+.opt-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+  margin-bottom: 5px;
+}
+.opt-row { display: flex; gap: 6px; flex-wrap: wrap; }
+button.opt {
+  flex: 1;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  background: var(--cream);
+  color: var(--ink-soft);
+  border: 1px solid var(--paper-edge);
+  border-radius: 7px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+button.opt:focus-visible { outline: 3px solid var(--blue); outline-offset: 1px; }
+button.opt.sel {
+  background: linear-gradient(180deg, var(--gold-soft), var(--gold));
+  border-color: #a87f24;
+  color: var(--ink);
+  box-shadow: 0 1px 0 #8f6a1b;
+}
+
+/* ---------- Guía para principiantes (nivel fácil) ---------- */
+.coach {
+  background: var(--paper);
+  border: 1px dashed var(--paper-edge);
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  padding: 8px 12px;
+  max-width: 640px;
+  box-shadow: 2px 3px 8px rgba(25, 10, 0, 0.35);
+  text-align: left;
+}
+.coach .coach-title {
+  font-family: var(--font-hand);
+  font-size: 1.05rem;
+  color: var(--red);
+  font-weight: 700;
+}
+.coach .coach-line { margin: 2px 0; color: var(--ink-soft); }
+.coach .coach-line strong { color: var(--ink); }
+
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
