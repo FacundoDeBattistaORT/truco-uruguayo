@@ -55,14 +55,14 @@ export class TrucoGame {
     if (!p && !a) { this.flor.resolved = true; return; }
     this.envido.resolved = true; // la flor anula el envido
     if (p && a) {
-      this.emit('canto', { who: this.mano, text: '¡Flor!' });
+      this.emit('canto', { who: this.mano, text: '¡Tengo flor!' });
       this.emit('canto', { who: this.other(this.mano), text: '¡Flor también!' });
       this.pending = { kind: 'flor', by: this.mano };
       this.phase = 'respond';
       this.toAct = this.other(this.mano);
     } else {
       const who = p ? 'p' : 'a';
-      this.emit('canto', { who, text: '¡Flor!' });
+      this.emit('canto', { who, text: '¡Tengo flor!' });
       this.flor.resolved = true;
       this.addPoints(who, 3, 'Flor');
     }

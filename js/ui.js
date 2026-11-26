@@ -12,7 +12,33 @@ let game;
 const queue = [];
 let pumping = false;
 
-// ---------- Construcción de cartas ----------
+// ---------- Construcción de naipes ----------
+// Posiciones de los pips (x, y, tamaño) en un lienzo de 100x150, por número.
+const PIP_LAYOUTS = {
+  1: [[50, 75, 46]],
+  2: [[50, 45, 31], [50, 105, 31]],
+  3: [[50, 34, 27], [50, 75, 27], [50, 116, 27]],
+  4: [[32, 45, 27], [68, 45, 27], [32, 105, 27], [68, 105, 27]],
+  5: [[31, 42, 24], [69, 42, 24], [50, 75, 24], [31, 108, 24], [69, 108, 24]],
+  6: [[31, 39, 23], [69, 39, 23], [31, 75, 23], [69, 75, 23], [31, 111, 23], [69, 111, 23]],
+  7: [[31, 36, 22], [69, 36, 22], [50, 57, 22], [31, 78, 22], [69, 78, 22], [31, 118, 22], [69, 118, 22]],
+};
+const FIGS = { 10: 'sota', 11: 'caballo', 12: 'rey' };
+const SUIT_COLORS = { espada: '#3b78b5', basto: '#5c8a3c', oro: '#c87f0a', copa: '#c0392b' };
+// "Pinta" clásica del naipe español: cortes en la línea del borde según el palo.
+const PINTA = { oro: 0, copa: 1, espada: 2, basto: 3 };
+
+function pintaLine(y, breaks, color) {
+  const x0 = 12, x1 = 88, gap = 6;
+  const seg = ((x1 - x0) - breaks * gap) / (breaks + 1);
+  let x = x0, d = '';
+  for (let i = 0; i <= breaks; i++) {
+    d += `M${x.toFixed(1)} ${y}h${seg.toFixed(1)}`;
+    x += seg + gap;
+  }
+  return `<path d="${d}" stroke="${color}" stroke-width="2.4" fill="none" stroke-linecap="round"></path>`;
+}
+
 function cardEl(card, { back = false } = {}) {
   const d = document.createElement('div');
   if (back) {
@@ -21,9 +47,25 @@ function cardEl(card, { back = false } = {}) {
   }
   const pieza = game && isPieza(card, game.muestra);
   d.className = `card s-${card.suit}${pieza ? ' pieza' : ''}`;
+  const color = SUIT_COLORS[card.suit];
+  let inner;
+  if (card.rank <= 7) {
+    inner = PIP_LAYOUTS[card.rank]
+      .map(([x, y, s]) => `<use href="#pip-${card.suit}" x="${x - s / 2}" y="${y - s / 2}" width="${s}" height="${s}"></use>`)
+      .join('');
+  } else {
+    inner = `<use href="#fig-${FIGS[card.rank]}" x="28" y="36" width="44" height="86"></use>
+             <use href="#pip-${card.suit}" x="41" y="14" width="18" height="18"></use>`;
+  }
+  const idx = `${card.rank}<svg aria-hidden="true"><use href="#pip-${card.suit}"></use></svg>`;
   d.innerHTML = `
-    <div class="idx">${card.rank}<svg aria-hidden="true"><use href="#suit-${card.suit}"></use></svg></div>
-    <div class="pip"><svg role="img" aria-label="${cardName(card)}"><use href="#suit-${card.suit}"></use></svg></div>`;
+    <div class="idx" style="color:${color}">${idx}</div>
+    <div class="idx br" style="color:${color}">${idx}</div>
+    <svg class="cardface" viewBox="0 0 100 150" role="img" aria-label="${cardName(card)}">
+      ${pintaLine(8, PINTA[card.suit], color)}
+      ${pintaLine(142, PINTA[card.suit], color)}
+      ${inner}
+    </svg>`;
   return d;
 }
 
@@ -32,11 +74,35 @@ function stageLabel(n) {
   return n <= 15 ? `${n} malas` : `${n - 15} buenas`;
 }
 
+// Tanteador de libreta: cuadraditos de a 5 (4 lados + diagonal),
+// negros para las malas y rojos para las buenas.
+function tallySquares(svg, score) {
+  const positions = [[5, 5], [33, 5], [5, 33], [33, 33], [5, 61], [33, 61]];
+  const rots = [-2.5, 2, -1.5, 2.5, -2, 1.5];
+  const s = 20;
+  let html = '';
+  for (let i = 0; i < 6; i++) {
+    const pts = Math.max(0, Math.min(5, score - i * 5));
+    if (!pts) continue;
+    const [x, y] = positions[i];
+    const color = i < 3 ? '#2d2a24' : '#c0392b';
+    const segs = [
+      `M${x} ${y}v${s}`,
+      `M${x} ${y}h${s}`,
+      `M${x + s} ${y}v${s}`,
+      `M${x} ${y + s}h${s}`,
+      `M${x} ${y}l${s} ${s}`,
+    ].slice(0, pts).join('');
+    html += `<path d="${segs}" stroke="${color}" stroke-width="2.4" fill="none" stroke-linecap="round" transform="rotate(${rots[i]} ${x + s / 2} ${y + s / 2})"></path>`;
+  }
+  svg.innerHTML = html;
+}
+
 function renderScore() {
-  $('#score-p .pts').textContent = game.scores.p;
-  $('#score-a .pts').textContent = game.scores.a;
-  $('#score-p .stage').textContent = stageLabel(game.scores.p);
-  $('#score-a .stage').textContent = stageLabel(game.scores.a);
+  tallySquares($('#tally-p'), game.scores.p);
+  tallySquares($('#tally-a'), game.scores.a);
+  $('#nsub-p').textContent = stageLabel(game.scores.p);
+  $('#nsub-a').textContent = stageLabel(game.scores.a);
 }
 
 function renderTurnMarkers() {
@@ -44,8 +110,8 @@ function renderTurnMarkers() {
   const aTurn = !game.gameOver && game.phase !== 'hand-end' && game.toAct === 'a';
   $('#avatar-p').classList.toggle('turn', pTurn);
   $('#avatar-a').classList.toggle('turn', aTurn);
-  $('#score-p').classList.toggle('active', pTurn);
-  $('#score-a').classList.toggle('active', aTurn);
+  $('#ncol-p').classList.toggle('active', pTurn);
+  $('#ncol-a').classList.toggle('active', aTurn);
 }
 
 function renderAIHand() {
@@ -75,7 +141,7 @@ function renderPlayerHand(clickable) {
 const SUIT_PLURAL = { espada: 'espadas', basto: 'bastos', oro: 'oros', copa: 'copas' };
 
 function miniCard(rank, suit) {
-  return `<span class="mini s-${suit}"><svg aria-hidden="true"><use href="#suit-${suit}"></use></svg>${rank}</span>`;
+  return `<span class="mini s-${suit}"><svg aria-hidden="true"><use href="#pip-${suit}"></use></svg>${rank}</span>`;
 }
 
 function renderReference() {
@@ -144,14 +210,17 @@ function clearSlots() {
   $('#slot-a').classList.remove('win');
 }
 
+// Cantos como texto grande sobre la mesa, al estilo del juego clásico.
+let cantoTimer = null;
 function bubble(who, text) {
-  const seat = $(who === 'p' ? '#seat-p' : '#seat-a');
-  seat.querySelectorAll('.bubble').forEach((b) => b.remove());
-  const b = document.createElement('div');
-  b.className = 'bubble';
-  b.textContent = text;
-  seat.appendChild(b);
-  setTimeout(() => b.remove(), 2400);
+  const b = $('#canto-banner');
+  b.textContent = text.replace(/[¡!¿?]/g, '').toUpperCase();
+  b.classList.toggle('ia', who === 'a');
+  b.classList.remove('show');
+  void b.offsetWidth;
+  b.classList.add('show');
+  clearTimeout(cantoTimer);
+  cantoTimer = setTimeout(() => b.classList.remove('show'), 2200);
 }
 
 let toastTimer = null;

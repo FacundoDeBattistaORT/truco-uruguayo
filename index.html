@@ -4,48 +4,75 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Truco Uruguayo</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Inter:wght@400;700;800&display=swap">
-  <link rel="stylesheet" href="css/styles.css?v=3">
-  <style>[hidden] { display: none !important; }</style>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Caveat:wght@700&family=Inter:wght@400;700;800&display=swap">
+  <link rel="stylesheet" href="css/styles.css?v=4">
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
-      <symbol id="suit-espada" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 1.2l3.1 12H8.9z"/>
-        <rect x="6.2" y="13.6" width="11.6" height="2.1" rx="1"/>
-        <rect x="11" y="16.1" width="2" height="4.4" rx="1"/>
-        <circle cx="12" cy="21.6" r="1.5"/>
+      <symbol id="pip-espada" viewBox="0 0 24 24">
+        <path d="M10.9 2.3c.3-1 1.9-1 2.2 0l1.7 10.3H9.2z" fill="#7fb0dd"/>
+        <path d="M12 1.6l1 11h-2z" fill="#3b78b5"/>
+        <rect x="6.6" y="12.6" width="10.8" height="2" rx="1" fill="#e3b23c"/>
+        <rect x="10.9" y="14.6" width="2.2" height="4.8" rx="1" fill="#b03a2e"/>
+        <circle cx="12" cy="20.8" r="1.7" fill="#e3b23c"/>
       </symbol>
-      <symbol id="suit-basto" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M10.1 2.7c2.2-1.2 4.6-.1 5.1 2.1l2.7 12.4c.5 2.1-.9 4.1-3 4.3-2 .2-3.6-1.2-3.9-3.2L9.1 6.1c-.2-1.4.1-2.8 1-3.4z"/>
-        <circle cx="14.6" cy="4.6" r="1.6"/>
-        <circle cx="9.6" cy="7.8" r="1.4"/>
+      <symbol id="pip-basto" viewBox="0 0 24 24">
+        <path d="M9.9 3.1c2.2-1.7 5.1-.7 5.7 1.9l2.7 11.6c.5 2.3-1 4.5-3.3 4.7-2.1.2-3.8-1.3-4.1-3.5L9 6.7c-.2-1.4 0-2.8.9-3.6z" fill="#5c8a3c"/>
+        <path d="M9.9 3.1c1.1-.9 2.5-1 3.6-.5l1.6 11.6-3.3.5L9 6.7c-.2-1.4 0-2.8.9-3.6z" fill="#79a64e"/>
+        <circle cx="14.4" cy="4.4" r="1.7" fill="#b03a2e"/>
+        <circle cx="9.4" cy="8.2" r="1.3" fill="#b03a2e"/>
+        <circle cx="14.9" cy="20.9" r="1.5" fill="#8a5a2b"/>
       </symbol>
-      <symbol id="suit-oro" viewBox="0 0 24 24" fill="currentColor">
-        <circle cx="12" cy="12" r="9.2"/>
-        <circle cx="12" cy="12" r="5.4" fill="#fff" fill-opacity=".4"/>
-        <circle cx="12" cy="12" r="2.4" fill-opacity=".6"/>
+      <symbol id="pip-oro" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" fill="#f2c230" stroke="#c87f0a" stroke-width="1.4"/>
+        <circle cx="12" cy="12" r="5.2" fill="#f8da6b" stroke="#c87f0a" stroke-width=".9"/>
+        <circle cx="12" cy="12" r="1.9" fill="#c0392b"/>
       </symbol>
-      <symbol id="suit-copa" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M4.8 2.8h14.4v3.4a7.2 7.2 0 0 1-5.7 7v3.3h3.3v2.7H7.2v-2.7h3.3v-3.3a7.2 7.2 0 0 1-5.7-7z"/>
+      <symbol id="pip-copa" viewBox="0 0 24 24">
+        <path d="M5.2 3h13.6v3.3a6.8 6.8 0 0 1-5.4 6.6v2.9h3.2v2.7H7.4v-2.7h3.2v-2.9A6.8 6.8 0 0 1 5.2 6.3z" fill="#c0392b"/>
+        <path d="M5.2 3h13.6v2.1H5.2z" fill="#e3b23c"/>
+        <rect x="7.4" y="15.8" width="9.2" height="1.2" fill="#e3b23c"/>
+      </symbol>
+      <symbol id="fig-sota" viewBox="0 0 24 34">
+        <rect x="17.6" y="3" width="1.6" height="26" rx=".8" fill="#8a5a2b"/>
+        <circle cx="11.5" cy="7" r="3.1" fill="#f0c9a0"/>
+        <path d="M11.5 3.2c2 0 3.4 1 3.4 2.4H8.1c0-1.4 1.4-2.4 3.4-2.4z" fill="#c0392b"/>
+        <path d="M7.5 31V17c0-3.4 1.7-5.6 4-5.6s4 2.2 4 5.6v14h-3.1v-9h-1.8v9z" fill="#5c8a3c"/>
+        <path d="M14.5 13l3.5 3-1.3 1.7-3.6-2.6z" fill="#c0392b"/>
+      </symbol>
+      <symbol id="fig-caballo" viewBox="0 0 24 34">
+        <circle cx="16" cy="6.5" r="2.7" fill="#f0c9a0"/>
+        <path d="M16 2.6c1.6 0 2.8.8 2.8 2h-5.6c0-1.2 1.2-2 2.8-2z" fill="#c0392b"/>
+        <path d="M13.6 9.5h4.8v7h-4.8z" fill="#c0392b"/>
+        <path d="M3.5 21.5c0-4.2 3.2-7 8.2-7h7.2c1.9 0 3 1.7 2.4 3.4l-2 6.1h-2.7l1.3-5h-6.2c-3 0-4.6 1.6-4.6 4.4V31H3.5z" fill="#9fb6cc"/>
+        <path d="M18.3 24.5h2.8l-.9 6.5h-2.8z" fill="#9fb6cc"/>
+      </symbol>
+      <symbol id="fig-rey" viewBox="0 0 24 34">
+        <path d="M6.5 4.5l2.3 2.2L12 3.5l3.2 3.2 2.3-2.2v4.8h-11z" fill="#e3b23c"/>
+        <circle cx="12" cy="12.6" r="3" fill="#f0c9a0"/>
+        <path d="M5.5 32c0-8 2.4-13.5 6.5-13.5S18.5 24 18.5 32z" fill="#c0392b"/>
+        <path d="M9.4 20.5h5.2V32H9.4z" fill="#5c8a3c"/>
+        <path d="M12 15.6v5" stroke="#e3b23c" stroke-width="1.4"/>
       </symbol>
     </defs>
   </svg>
 
   <div class="app">
     <header class="topbar">
-      <h1 class="brand">Truco Uruguayo <span>· a 30 puntos</span></h1>
-      <div class="scoreboard">
-        <div class="score" id="score-p">
-          <div class="who">Vos</div>
-          <div class="pts">0</div>
-          <div class="stage">0 malas</div>
-        </div>
-        <div class="score" id="score-a">
-          <div class="who">La IA</div>
-          <div class="pts">0</div>
-          <div class="stage">0 malas</div>
+      <h1 class="brand">Truco Uruguayo <span>a 30 puntos · con muestra y flor</span></h1>
+      <div class="notepad" aria-label="Tanteador">
+        <div class="cols">
+          <div class="ncol" id="ncol-p">
+            <div class="nhead">YO</div>
+            <svg class="tally" id="tally-p" viewBox="0 0 58 88"></svg>
+            <div class="nsub" id="nsub-p">0 malas</div>
+          </div>
+          <div class="ncol" id="ncol-a">
+            <div class="nhead">EL</div>
+            <svg class="tally" id="tally-a" viewBox="0 0 58 88"></svg>
+            <div class="nsub" id="nsub-a">0 malas</div>
+          </div>
         </div>
       </div>
     </header>
@@ -59,6 +86,8 @@
       </aside>
 
       <main class="table-area">
+        <div class="canto-banner" id="canto-banner"></div>
+
         <section class="seat ai" id="seat-a" aria-label="Mano de la IA">
           <div class="avatar" id="avatar-a">
             <div class="face">🤖</div>
@@ -118,6 +147,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/ui.js?v=2"></script>
+  <script type="module" src="js/ui.js?v=3"></script>
 </body>
 </html>
